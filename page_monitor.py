@@ -8,12 +8,24 @@ from bs4 import BeautifulSoup
 # 監控的網頁清單 - 改成妳要監控的網址和關鍵詞
 PAGES_TO_MONITOR = [
     {
-        "name": "韋理高中公告",
+        "name": "衛理高中公告",
         "url": "https://www.wlgsh.tp.edu.tw/nss/s/hiwesley/link1",
-        "selector": "body",  # 監控整個頁面
-        "keywords": [],  # 空的代表任何變化都通知
+        "selector": "body",
+        "keywords": [],
     },
-]
+    {
+        "name": "安創共契",
+        "url": "https://gsmarket.adi.gov.tw/portal/%E6%9C%80%E6%96%B0%E6%B6%88%E6%81%AF?code=TenderNotice",
+        "selector": "body",
+        "keywords": [],
+    },
+    {
+        "name": "達人女中",
+        "url": "https://sites.google.com/trgsh.tp.edu.tw/junior#h.6zh8fotzcre",
+        "selector": "body",
+        "keywords": [],
+    },
+] 
 
 SLACK_WEBHOOK = os.getenv("SLACK_WEBHOOK")  # GitHub Secrets 裡設定
 MAIL_TO = os.getenv("NOTIFY_EMAIL")  # GitHub Secrets 裡設定
