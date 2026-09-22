@@ -1,0 +1,32 @@
+name: 網頁監控 (每天執行)
+
+on:
+  schedule:
+    # 每天上午 9 點執行 (台灣時間 UTC+8，所以設定 UTC 時間 1 點)
+    - cron: '0 1 * * *'
+  
+  # 也可以手動觸發
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: 設定 Python 環境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: 安裝依賴
+        run: |
+          pip install requests beautifulsoup4
+      
+      - name: 執行監控腳本
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+        run: python page_monitor.py
