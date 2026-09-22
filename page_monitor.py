@@ -5,7 +5,6 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 # ==================== 設定區域 ====================
-# 監控的網頁清單 - 改成妳要監控的網址和關鍵詞
 PAGES_TO_MONITOR = [
     {
         "name": "衛理高中公告",
@@ -25,10 +24,10 @@ PAGES_TO_MONITOR = [
         "selector": "body",
         "keywords": [],
     },
-] 
+]
 
-SLACK_WEBHOOK = os.getenv("SLACK_WEBHOOK")  # GitHub Secrets 裡設定
-MAIL_TO = os.getenv("NOTIFY_EMAIL")  # GitHub Secrets 裡設定
+SLACK_WEBHOOK = os.getenv("SLACK_WEBHOOK")
+MAIL_TO = os.getenv("NOTIFY_EMAIL")
 
 # ==================== 主要邏輯 ====================
 def fetch_page_content(url, selector):
@@ -107,14 +106,19 @@ def check_content_changes(page_config):
 def send_slack_notification(page_name, result):
     """發送 Slack 通知"""
     if not SLACK_WEBHOOK:
+        print(f"❌ {page_name} - SLACK_WEBHOOK 未設定")
         return
     
-    if result["status"] == "error":
+    # 設定顏色和標題
+    if result.get("status") == "error":
         color = "danger"
         title = f"❌ {page_name} - 監控錯誤"
-    else:
+    elif result.get("changed"):
         color = "good"
         title = f"🔔 {page_name} - 內容已更新"
+    else:
+        color = "warning"
+        title = f"📌 {page_name} - 監控執行"
     
     message = {
         "attachments": [
@@ -144,18 +148,19 @@ def send_slack_notification(page_name, result):
     }
     
     try:
-        requests.post(SLACK_WEBHOOK, json=message)
-        print(f"✓ Slack 通知已發送: {page_name}")
+        response = requests.post(SLACK_WEBHOOK, json=message)
+        if response.status_code == 200:
+            print(f"✓ Slack 通知已發送: {page_name}")
+        else:
+            print(f"✗ Slack 通知失敗 (HTTP {response.status_code}): {page_name}")
     except Exception as e:
-        print(f"✗ Slack 通知失敗: {str(e)}")
+        print(f"✗ Slack 通知失敗: {page_name} - {str(e)}")
 
 def send_mail_notification(page_name, result):
-    """發送郵件通知 (使用 GitHub 內建或 SMTP)"""
+    """發送郵件通知"""
     if not MAIL_TO:
         return
     
-    # 簡單做法：如果妳有設定 SMTP_HOST，就用這個
-    # 否則可以用 Web3Forms 或其他免費郵件服務
     print(f"📧 郵件通知 (需額外設定): {page_name}")
 
 # ==================== 主程式 ====================
@@ -166,12 +171,10 @@ if __name__ == "__main__":
         print(f"檢查: {page['name']} ({page['url']})")
         result = check_content_changes(page)
         
-        if result["changed"]:
-            print(f"  → {result['message']}")
-            send_slack_notification(page['name'], result)
-            send_mail_notification(page['name'], result)
-        else:
-            print(f"  → {result['message']}")
+        print(f"  → {result['message']}")
+        # 發送 Slack 通知（無論什麼狀態都發）
+        send_slack_notification(page['name'], result)
+        send_mail_notification(page['name'], result)
         print()
     
     print("✓ 監控週期完成")
