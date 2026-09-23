@@ -2,10 +2,7 @@ name: Monitor Pages
 
 on:
   schedule:
-    # 每天 UTC 01:00 執行（台灣時間早上 9 點）
     - cron: '0 1 * * *'
-  
-  # 支持手動觸發
   workflow_dispatch:
 
 jobs:
@@ -24,16 +21,17 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests beautifulsoup4
+          pip install requests
       
       - name: Run monitoring script
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         run: python page_monitor.py
       
-      - name: Commit changes if any
+      - name: Commit changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add page_hashes.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update page hashes - $(date -u +'%Y-%m-%d %H:%M:%S UTC')" && git push)
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add -A
+          git commit -m "Update page hashes - $(date -u +'%Y-%m-%d %H:%M:%S UTC')" --allow-empty
+          git push
