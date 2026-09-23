@@ -1,23 +1,37 @@
 {
   "pages": [
     {
-      "id": "page_1",
-      "name": "衛理高中公告",
-      "url": "https://www.wlgsh.tp.edu.tw/nss/s/hiwesley/link1",
-      "mode": "change",
-      "enabled": true
-    },
-    {
-      "id": "page_2",
-      "name": "安創共契",
+      "id": "page_1790127616858",
+      "name": "共契頁面",
       "url": "https://gsmarket.adi.gov.tw/portal/%E6%9C%80%E6%96%B0%E6%B6%88%E6%81%AF?code=TenderNotice",
       "mode": "change",
       "enabled": true
     },
     {
-      "id": "page_3",
+      "id": "page_1790127754674",
       "name": "達人女中",
-      "url": "https://sites.google.com/trgsh.tp.edu.tw/junior#h.6zh8fotzcre",
+      "url": "https://sites.google.com/trgsh.tp.edu.tw/junior",
+      "mode": "change",
+      "enabled": true
+    },
+    {
+      "id": "page_1790127797774",
+      "name": "衛理女中",
+      "url": "https://www.wlgsh.tp.edu.tw/nss/s/hiwesley/link1",
+      "mode": "change",
+      "enabled": true
+    },
+    {
+      "id": "page_1790127829658",
+      "name": "聖心女中",
+      "url": "https://www.shgsh.ntpc.edu.tw/nss/s/main/p/admissions11",
+      "mode": "change",
+      "enabled": true
+    },
+    {
+      "id": "page_1790127862458",
+      "name": "延平國中",
+      "url": "https://www.yphs.tp.edu.tw/category/recruit/",
       "mode": "change",
       "enabled": true
     }
