@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網頁監控 Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .pages-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .page-item {
+            background: #f8f9fa;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .page-item.disabled {
+            opacity: 0.6;
+            border-left-color: #ccc;
+        }
+        
+        .page-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .page-url {
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+            margin-bottom: 5px;
+        }
+        
+        .page-mode {
+            font-size: 12px;
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            margin-right: 5px;
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        
+        .page-actions button {
+            padding: 4px 8px;
+            font-size: 12px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .edit-btn {
+            background: #28a745;
+            color: white;
+        }
+        
+        .edit-btn:hover {
+            background: #218838;
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #c82333;
+        }
+        
+        .form-section {
+            margin-bottom: 15px;
+        }
+        
+        .form-section label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        input[type="text"],
+        input[type="url"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            margin-bottom: 10px;
+        }
+        
+        input[type="text"]:focus,
+        input[type="url"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .json-output {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+        
+        .copy-btn {
+            width: 100%;
+            background: #17a2b8;
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .copy-btn:hover {
+            background: #138496;
+        }
+        
+        .mode-description {
+            font-size: 12px;
+            color: #666;
+            margin-top: -8px;
+            margin-bottom: 10px;
+        }
+        
+        .keyword-input {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 3px;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 網頁監控 Dashboard</h1>
+            <p>管理妳要監控的網頁清單 - 支援 4 種監控模式</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- 左側：頁面列表 -->
+            <div class="card">
+                <h2>📋 監控頁面列表</h2>
+                <div class="pages-list" id="pagesList"></div>
+                <button class="btn-primary" onclick="addNewPage()" style="width: 100%; margin-top: 10px;">
+                    ➕ 新增頁面
+                </button>
+            </div>
+            
+            <!-- 右側：編輯表單 -->
+            <div class="card">
+                <h2>⚙️ 編輯頁面</h2>
+                <div class="success-message" id="successMsg">✓ 儲存成功！</div>
+                
+                <div class="form-section">
+                    <label>頁面名稱</label>
+                    <input type="text" id="pageName" placeholder="e.g. 衛理高中公告">
+                </div>
+                
+                <div class="form-section">
+                    <label>頁面網址</label>
+                    <input type="url" id="pageUrl" placeholder="https://...">
+                </div>
+                
+                <div class="form-section">
+                    <label>監控模式</label>
+                    <select id="pageMode" onchange="updateModeDescription()">
+                        <option value="">-- 選擇模式 --</option>
+                        <option value="change">1. 有異動就通知</option>
+                        <option value="keyword_appear">2. 關鍵字出現通知</option>
+                        <option value="keyword_disappear">3. 關鍵字消失通知</option>
+                        <option value="price">4. 價格變化通知</option>
+                    </select>
+                    <div class="mode-description" id="modeDesc"></div>
+                </div>
+                
+                <div id="keywordSection" style="display: none;">
+                    <div class="form-section">
+                        <label>監控關鍵字（用逗號分隔）</label>
+                        <textarea id="keywords" placeholder="e.g. 新增, 通知, 重要" rows="3"></textarea>
+                        <div class="keyword-input">💡 輸入多個關鍵字，用逗號分隔</div>
+                    </div>
+                </div>
+                
+                <div id="priceSection" style="display: none;">
+                    <div class="form-section">
+                        <label>價格選擇器（可選）</label>
+                        <input type="text" id="priceSelector" placeholder=".price 或 #price">
+                        <div class="keyword-input">💡 e.g. .price (class) 或 #price (id)，留空則自動檢測</div>
+                    </div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="pageEnabled" checked>
+                    <label for="pageEnabled" style="margin: 0;">啟用此頁面</label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="savePage()">💾 保存</button>
+                    <button class="btn-secondary" onclick="resetForm()">🔄 清除</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top: 20px;">
+            <h2>📄 JSON 配置</h2>
+            <p style="color: #666; font-size: 13px; margin-bottom: 10px;">複製此 JSON 到 GitHub 的 <code>config.json</code> 文件中</p>
+            <div class="json-output" id="jsonOutput">{}</div>
+            <button class="copy-btn" onclick="copyToClipboard()">📋 複製到剪貼簿</button>
+        </div>
+    </div>
+
+    <script>
+        let currentEditId = null;
+        let pages = [];
+
+        const modeDescriptions = {
+            'change': '監控頁面內容是否有任何改變',
+            'keyword_appear': '當頁面出現指定的關鍵字時通知',
+            'keyword_disappear': '當頁面中的關鍵字消失時通知',
+            'price': '監控頁面中的價格變化'
+        };
+
+        function loadPages() {
+            const stored = localStorage.getItem('pagesConfig');
+            pages = stored ? JSON.parse(stored) : [];
+            renderPagesList();
+            updateJsonOutput();
+        }
+
+        function renderPagesList() {
+            const listDiv = document.getElementById('pagesList');
+            listDiv.innerHTML = '';
+            
+            if (pages.length === 0) {
+                listDiv.innerHTML = '<div style="color: #666; text-align: center; padding: 20px;">還沒有頁面，點擊下方新增吧</div>';
+                return;
+            }
+            
+            pages.forEach(page => {
+                const div = document.createElement('div');
+                div.className = `page-item ${!page.enabled ? 'disabled' : ''}`;
+                
+                let modeLabel = {
+                    'change': '異動通知',
+                    'keyword_appear': '關鍵字出現',
+                    'keyword_disappear': '關鍵字消失',
+                    'price': '價格變化'
+                }[page.mode] || page.mode;
+                
+                div.innerHTML = `
+                    <div class="page-name">${page.name}</div>
+                    <div class="page-url">${page.url}</div>
+                    <span class="page-mode">${modeLabel}</span>
+                    <div class="page-actions">
+                        <button class="edit-btn" onclick="editPage('${page.id}')">編輯</button>
+                        <button class="delete-btn" onclick="deletePage('${page.id}')">刪除</button>
+                    </div>
+                `;
+                listDiv.appendChild(div);
+            });
+        }
+
+        function addNewPage() {
+            currentEditId = null;
+            resetForm();
+        }
+
+        function editPage(id) {
+            const page = pages.find(p => p.id === id);
+            if (!page) return;
+            
+            currentEditId = id;
+            document.getElementById('pageName').value = page.name;
+            document.getElementById('pageUrl').value = page.url;
+            document.getElementById('pageMode').value = page.mode;
+            document.getElementById('pageEnabled').checked = page.enabled !== false;
+            
+            if (page.keywords) {
+                document.getElementById('keywords').value = page.keywords.join(', ');
+            }
+            if (page.price_selector) {
+                document.getElementById('priceSelector').value = page.price_selector;
+            }
+            
+            updateModeDescription();
+        }
+
+        function deletePage(id) {
+            if (confirm('確定要刪除此頁面？')) {
+                pages = pages.filter(p => p.id !== id);
+                savePagesToStorage();
+                renderPagesList();
+                updateJsonOutput();
+                if (currentEditId === id) resetForm();
+            }
+        }
+
+        function resetForm() {
+            currentEditId = null;
+            document.getElementById('pageName').value = '';
+            document.getElementById('pageUrl').value = '';
+            document.getElementById('pageMode').value = '';
+            document.getElementById('keywords').value = '';
+            document.getElementById('priceSelector').value = '';
+            document.getElementById('pageEnabled').checked = true;
+            updateModeDescription();
+        }
+
+        function updateModeDescription() {
+            const mode = document.getElementById('pageMode').value;
+            const desc = modeDescriptions[mode] || '';
+            document.getElementById('modeDesc').textContent = desc;
+            
+            document.getElementById('keywordSection').style.display = 
+                (mode === 'keyword_appear' || mode === 'keyword_disappear') ? 'block' : 'none';
+            document.getElementById('priceSection').style.display = 
+                mode === 'price' ? 'block' : 'none';
+        }
+
+        function savePage() {
+            const name = document.getElementById('pageName').value.trim();
+            const url = document.getElementById('pageUrl').value.trim();
+            const mode = document.getElementById('pageMode').value;
+            const enabled = document.getElementById('pageEnabled').checked;
+            
+            if (!name || !url || !mode) {
+                alert('請填寫所有必要欄位');
+                return;
+            }
+            
+            const pageData = {
+                id: currentEditId || `page_${Date.now()}`,
+                name,
+                url,
+                mode,
+                enabled
+            };
+            
+            if (mode === 'keyword_appear' || mode === 'keyword_disappear') {
+                const keywords = document.getElementById('keywords').value
+                    .split(',')
+                    .map(k => k.trim())
+                    .filter(k => k);
+                if (keywords.length === 0) {
+                    alert('請輸入至少一個關鍵字');
+                    return;
+                }
+                pageData.keywords = keywords;
+            }
+            
+            if (mode === 'price') {
+                const selector = document.getElementById('priceSelector').value.trim();
+                if (selector) pageData.price_selector = selector;
+            }
+            
+            if (currentEditId) {
+                const index = pages.findIndex(p => p.id === currentEditId);
+                pages[index] = pageData;
+            } else {
+                pages.push(pageData);
+            }
+            
+            savePagesToStorage();
+            renderPagesList();
+            updateJsonOutput();
+            resetForm();
+            
+            const msg = document.getElementById('successMsg');
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 3000);
+        }
+
+        function savePagesToStorage() {
+            localStorage.setItem('pagesConfig', JSON.stringify(pages));
+        }
+
+        function updateJsonOutput() {
+            const config = { pages };
+            const json = JSON.stringify(config, null, 2);
+            document.getElementById('jsonOutput').textContent = json;
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('jsonOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✓ 已複製到剪貼簿！');
+            });
+        }
+
+        // 初始化
+        loadPages();
+    </script>
+</body>
+</html>
