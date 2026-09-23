@@ -2,7 +2,10 @@ name: Monitor Pages
 
 on:
   schedule:
+    # 每天 UTC 01:00 執行（台灣時間早上 9 點）
     - cron: '0 1 * * *'
+  
+  # 支持手動觸發
   workflow_dispatch:
 
 permissions:
@@ -36,5 +39,5 @@ jobs:
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
           git add -A
-          git commit -m "Update page hashes - $(date -u +'%Y-%m-%d %H:%M:%S UTC')" --allow-empty
+          git commit -m "Update monitoring data - $(date -u +'%Y-%m-%d %H:%M:%S UTC')" --allow-empty
           git push
