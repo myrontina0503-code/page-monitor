@@ -1,5 +1,14 @@
 {
-  "衛理高中公告": "da4c66cec387b310ad1d4e103496bc5a",
-  "安創共契": "75a4ad94c44bf705a1c6def68ed2e6e2",
-  "達人女中": "a382e1d55052d4d435fa86b960ea6865"
+  "page_1": {
+    "type": "hash",
+    "value": "1f99032a92874e41cbf0713580ec93b9"
+  },
+  "page_2": {
+    "type": "hash",
+    "value": "29c5bcb225afcfd0a7804a55e6f40ca4"
+  },
+  "page_3": {
+    "type": "hash",
+    "value": "0b457c3eec9470af222ae76d804dd352"
+  }
 }
