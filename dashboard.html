@@ -5,184 +5,226 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>網頁監控 Dashboard</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 30px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header h1 { color: #333; margin-bottom: 10px; }
+        .header p { color: #666; font-size: 14px; }
+        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card h2 { color: #333; margin-bottom: 15px; font-size: 18px; }
+        .pages-list { max-height: 500px; overflow-y: auto; }
+        .page-item { background: #f8f9fa; padding: 12px; margin-bottom: 10px; border-radius: 6px; border-left: 4px solid #667eea; }
+        .page-name { font-weight: 600; color: #333; margin-bottom: 5px; }
+        .page-url { font-size: 12px; color: #666; word-break: break-all; margin-bottom: 5px; }
+        .page-info { font-size: 11px; color: #999; margin-bottom: 5px; }
+        .page-mode { font-size: 12px; display: inline-block; background: #667eea; color: white; padding: 2px 8px; border-radius: 3px; margin-right: 5px; }
+        .page-actions { display: flex; gap: 5px; margin-top: 8px; }
+        .page-actions button { padding: 4px 8px; font-size: 12px; border: none; border-radius: 3px; cursor: pointer; }
+        .edit-btn { background: #28a745; color: white; }
+        .delete-btn { background: #dc3545; color: white; }
+        .form-section { margin-bottom: 15px; }
+        .form-section label { display: block; color: #333; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
+        input[type="text"], input[type="url"], select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; margin-bottom: 10px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .button-group { display: flex; gap: 10px; margin-top: 15px; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: #667eea; color: white; flex: 1; }
+        .btn-secondary { background: #6c757d; color: white; flex: 1; }
+        .json-output { background: #f8f9fa; padding: 12px; border-radius: 5px; max-height: 300px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px; color: #333; white-space: pre-wrap; word-break: break-all; margin-bottom: 10px; }
+        .copy-btn { width: 100%; background: #17a2b8; color: white; padding: 8px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .helper-text { font-size: 12px; color: #666; margin-top: 5px; padding: 8px; background: #f0f0f0; border-radius: 3px; }
+        .success-message { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 10px; display: none; }
+        @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 網頁監控 Dashboard</h1>
+            <p>管理妳要監控的網頁清單 - 支援 CSS 選擇器精準監控</p>
+        </div>
         
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+        <div class="main-content">
+            <div class="card">
+                <h2>📋 監控頁面列表</h2>
+                <div class="pages-list" id="pagesList"></div>
+                <button class="btn-primary" onclick="addNewPage()" style="width: 100%; margin-top: 10px;">➕ 新增頁面</button>
+            </div>
+            
+            <div class="card">
+                <h2>⚙️ 編輯頁面</h2>
+                <div class="success-message" id="successMsg">✓ 儲存成功！</div>
+                
+                <div class="form-section">
+                    <label>頁面名稱</label>
+                    <input type="text" id="pageName" placeholder="e.g. 衛理高中公告">
+                </div>
+                
+                <div class="form-section">
+                    <label>頁面網址</label>
+                    <input type="url" id="pageUrl" placeholder="https://...">
+                </div>
+                
+                <div class="form-section">
+                    <label>CSS 選擇器（可選）</label>
+                    <input type="text" id="pageSelector" placeholder="e.g. .notice, #content">
+                    <div class="helper-text">💡 例: .htmldisplay (監控該區域) 或留空監控整個頁面</div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="pageEnabled" checked>
+                    <label for="pageEnabled" style="margin: 0;">啟用此頁面</label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="savePage()">💾 保存</button>
+                    <button class="btn-secondary" onclick="resetForm()">🔄 清除</button>
+                </div>
+            </div>
+        </div>
         
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        <div class="card" style="margin-top: 20px;">
+            <h2>📄 JSON 配置</h2>
+            <p style="color: #666; font-size: 13px; margin-bottom: 10px;">複製此 JSON 到 GitHub 的 config.json</p>
+            <div class="json-output" id="jsonOutput">{}</div>
+            <button class="copy-btn" onclick="copyToClipboard()">📋 複製到剪貼簿</button>
+        </div>
+    </div>
+
+    <script>
+        let currentEditId = null;
+        let pages = [];
+
+        function loadPages() {
+            const stored = localStorage.getItem('pagesConfig');
+            pages = stored ? JSON.parse(stored) : [];
+            renderPagesList();
+            updateJsonOutput();
         }
-        
-        .header {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+        function renderPagesList() {
+            const listDiv = document.getElementById('pagesList');
+            listDiv.innerHTML = '';
+            
+            if (pages.length === 0) {
+                listDiv.innerHTML = '<div style="color: #666; text-align: center; padding: 20px;">還沒有頁面</div>';
+                return;
+            }
+            
+            pages.forEach(page => {
+                const div = document.createElement('div');
+                div.className = 'page-item';
+                
+                let selectorInfo = '';
+                if (page.selector) {
+                    selectorInfo = `<div class="page-info">🔍 ${page.selector}</div>`;
+                }
+                
+                div.innerHTML = `
+                    <div class="page-name">${page.name}</div>
+                    <div class="page-url">${page.url}</div>
+                    ${selectorInfo}
+                    <span class="page-mode">異動通知</span>
+                    <div class="page-actions">
+                        <button class="edit-btn" onclick="editPage('${page.id}')">編輯</button>
+                        <button class="delete-btn" onclick="deletePage('${page.id}')">刪除</button>
+                    </div>
+                `;
+                listDiv.appendChild(div);
+            });
         }
-        
-        .header h1 {
-            color: #333;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+
+        function addNewPage() {
+            currentEditId = null;
+            resetForm();
         }
-        
-        .header p {
-            color: #666;
-            font-size: 14px;
+
+        function editPage(id) {
+            const page = pages.find(p => p.id === id);
+            if (!page) return;
+            
+            currentEditId = id;
+            document.getElementById('pageName').value = page.name;
+            document.getElementById('pageUrl').value = page.url;
+            document.getElementById('pageSelector').value = page.selector || '';
+            document.getElementById('pageEnabled').checked = page.enabled !== false;
         }
-        
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+
+        function deletePage(id) {
+            if (confirm('確定要刪除？')) {
+                pages = pages.filter(p => p.id !== id);
+                savePagesToStorage();
+                renderPagesList();
+                updateJsonOutput();
+                if (currentEditId === id) resetForm();
+            }
         }
-        
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+        function resetForm() {
+            currentEditId = null;
+            document.getElementById('pageName').value = '';
+            document.getElementById('pageUrl').value = '';
+            document.getElementById('pageSelector').value = '';
+            document.getElementById('pageEnabled').checked = true;
         }
-        
-        .card h2 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+
+        function savePage() {
+            const name = document.getElementById('pageName').value.trim();
+            const url = document.getElementById('pageUrl').value.trim();
+            const selector = document.getElementById('pageSelector').value.trim();
+            const enabled = document.getElementById('pageEnabled').checked;
+            
+            if (!name || !url) {
+                alert('請填寫頁面名稱和網址');
+                return;
+            }
+            
+            const pageData = {
+                id: currentEditId || `page_${Date.now()}`,
+                name,
+                url,
+                mode: 'change',
+                enabled
+            };
+            
+            if (selector) pageData.selector = selector;
+            
+            if (currentEditId) {
+                pages[pages.findIndex(p => p.id === currentEditId)] = pageData;
+            } else {
+                pages.push(pageData);
+            }
+            
+            savePagesToStorage();
+            renderPagesList();
+            updateJsonOutput();
+            resetForm();
+            
+            const msg = document.getElementById('successMsg');
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 3000);
         }
-        
-        .pages-list {
-            max-height: 500px;
-            overflow-y: auto;
+
+        function savePagesToStorage() {
+            localStorage.setItem('pagesConfig', JSON.stringify(pages));
         }
-        
-        .page-item {
-            background: #f8f9fa;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            border-left: 4px solid #667eea;
+
+        function updateJsonOutput() {
+            const config = { pages };
+            document.getElementById('jsonOutput').textContent = JSON.stringify(config, null, 2);
         }
-        
-        .page-item.disabled {
-            opacity: 0.6;
-            border-left-color: #ccc;
+
+        function copyToClipboard() {
+            const text = document.getElementById('jsonOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✓ 已複製！');
+            });
         }
-        
-        .page-name {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        
-        .page-url {
-            font-size: 12px;
-            color: #666;
-            word-break: break-all;
-            margin-bottom: 5px;
-        }
-        
-        .page-info {
-            font-size: 11px;
-            color: #999;
-            margin-bottom: 5px;
-        }
-        
-        .page-mode {
-            font-size: 12px;
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 3px;
-            margin-right: 5px;
-        }
-        
-        .page-actions {
-            display: flex;
-            gap: 5px;
-            margin-top: 8px;
-        }
-        
-        .page-actions button {
-            padding: 4px 8px;
-            font-size: 12px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .edit-btn {
-            background: #28a745;
-            color: white;
-        }
-        
-        .edit-btn:hover {
-            background: #218838;
-        }
-        
-        .delete-btn {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .delete-btn:hover {
-            background: #c82333;
-        }
-        
-        .form-section {
-            margin-bottom: 15px;
-        }
-        
-        .form-section label {
-            display: block;
-            color: #333;
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-        
-        input[type="text"],
-        input[type="url"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            font-family: inherit;
-            margin-bottom: 10px;
-        }
-        
-        input[type="text"]:focus,
-        input[type="url"]:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
+
+        loadPages();
+    </script>
+</body>
+</html>
