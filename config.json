@@ -27,7 +27,7 @@
     {
       "id": "page_4",
       "name": "延平國中",
-      "url": "https://你的延平國中網址",
+      "url": "https://www.yphs.tp.edu.tw/category/recruit/",
       "mode": "change",
       "selector": ".page_main_content",
       "enabled": true

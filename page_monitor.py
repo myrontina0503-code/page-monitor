@@ -132,4 +132,51 @@ def monitor_pages():
         selector = page.get("selector")
         mode = page.get("mode", "change")
         
-        print(f"\n📄 檢查: {page_name} (模式:
+        print(f"\n📄 檢查: {page_name} (模式: {mode})")
+        if selector:
+            print(f"   🔍 選擇器: {selector}")
+        
+        # 下載內容
+        content = get_page_content(page_url)
+        if not content:
+            print(f"   ⚠️ 無法下載，跳過")
+            new_hashes[page_id] = old_hashes.get(page_id, {})
+            continue
+        
+        # 只比對選擇器範圍內的內容
+        content = extract_content_by_selector(content, selector)
+        
+        notification = None
+        
+        # 有異動就通知
+        new_hash = compute_hash(content)
+        new_hashes[page_id] = {"type": "hash", "value": new_hash}
+        old_hash = old_hashes.get(page_id, {}).get("value")
+        
+        if old_hash is None:
+            print(f"   ℹ️ 首次監控")
+        elif old_hash == new_hash:
+            print(f"   ✓ 無異動")
+        else:
+            print(f"   ⚠️ 檢測到異動！")
+            notification = {
+                "page_name": page_name,
+                "message": f"頁面內容已更新\n   {page_url}"
+            }
+        
+        if notification:
+            notifications.append(notification)
+    
+    # 保存新的哈希值
+    save_hashes(new_hashes)
+    
+    # 發送通知（如果有異動）
+    if notifications:
+        send_slack_notification(notifications)
+    else:
+        print("\n✓ 本次監控完成，無異動")
+    
+    print("✓ 完成")
+
+if __name__ == "__main__":
+    monitor_pages()
