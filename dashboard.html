@@ -46,46 +46,68 @@
             <h1>🔔 網頁監控 Dashboard</h1>
             <p>管理妳要監控的網頁清單 - 支援 CSS 選擇器精準監控</p>
         </div>
-        
+
         <div class="main-content">
             <div class="card">
                 <h2>📋 監控頁面列表</h2>
                 <div class="pages-list" id="pagesList"></div>
                 <button class="btn-primary" onclick="addNewPage()" style="width: 100%; margin-top: 10px;">➕ 新增頁面</button>
             </div>
-            
+
             <div class="card">
                 <h2>⚙️ 編輯頁面</h2>
                 <div class="success-message" id="successMsg">✓ 儲存成功！</div>
-                
+
                 <div class="form-section">
                     <label>頁面名稱</label>
                     <input type="text" id="pageName" placeholder="e.g. 衛理高中公告">
                 </div>
-                
+
                 <div class="form-section">
                     <label>頁面網址</label>
                     <input type="url" id="pageUrl" placeholder="https://...">
                 </div>
-                
+
                 <div class="form-section">
                     <label>CSS 選擇器（可選）</label>
                     <input type="text" id="pageSelector" placeholder="e.g. .notice, #content">
                     <div class="helper-text">💡 例: .htmldisplay (監控該區域) 或留空監控整個頁面</div>
                 </div>
-                
+
                 <div class="checkbox-group">
                     <input type="checkbox" id="pageEnabled" checked>
                     <label for="pageEnabled" style="margin: 0;">啟用此頁面</label>
                 </div>
-                
+
                 <div class="button-group">
                     <button class="btn-primary" onclick="savePage()">💾 保存</button>
                     <button class="btn-secondary" onclick="resetForm()">🔄 清除</button>
                 </div>
             </div>
         </div>
-        
+
+        <div class="card" style="margin-top: 20px;">
+            <h2>📖 CSS 選擇器怎麼找（給自己看的筆記）</h2>
+            <ol style="font-size: 14px; color: #333; line-height: 1.8; padding-left: 20px;">
+                <li>打開要監控的網頁（例如達人女中）</li>
+                <li>在頁面的主要內容文字上按<b>右鍵</b> →「<b>檢查</b>」</li>
+                <li>開發者工具裡，把滑鼠移到上方程式碼列，頁面會亮起藍色區域</li>
+                <li>往上找，直到藍色區域剛好包住妳要監控的內容，看那一行的 <code>class</code> 或 <code>id</code></li>
+                <li>
+                    常見寫法：
+                    <ul>
+                        <li><code>&lt;div class="zfr3Q"&gt;</code> → 選擇器填 <code>.zfr3Q</code></li>
+                        <li><code>&lt;div id="main"&gt;</code> → 選擇器填 <code>#main</code></li>
+                    </ul>
+                </li>
+                <li>切到 <b>Console</b> 測試，輸入：<br>
+                    <code>document.querySelector('.zfr3Q').innerText.slice(0, 200)</code><br>
+                    出現妳要的文字 → 正確 ✅；出現 <code>null</code> → 選擇器錯誤</li>
+                <li>確認後，把選擇器填到上面的「CSS 選擇器」欄位，再複製 JSON 到 config.json</li>
+            </ol>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">⚠️ 不確定就留空，會監控整個頁面（但可能誤報）</p>
+        </div>
+
         <div class="card" style="margin-top: 20px;">
             <h2>📄 JSON 配置</h2>
             <p style="color: #666; font-size: 13px; margin-bottom: 10px;">複製此 JSON 到 GitHub 的 config.json</p>
@@ -108,21 +130,21 @@
         function renderPagesList() {
             const listDiv = document.getElementById('pagesList');
             listDiv.innerHTML = '';
-            
+
             if (pages.length === 0) {
                 listDiv.innerHTML = '<div style="color: #666; text-align: center; padding: 20px;">還沒有頁面</div>';
                 return;
             }
-            
+
             pages.forEach(page => {
                 const div = document.createElement('div');
                 div.className = 'page-item';
-                
+
                 let selectorInfo = '';
                 if (page.selector) {
                     selectorInfo = `<div class="page-info">🔍 ${page.selector}</div>`;
                 }
-                
+
                 div.innerHTML = `
                     <div class="page-name">${page.name}</div>
                     <div class="page-url">${page.url}</div>
@@ -145,7 +167,7 @@
         function editPage(id) {
             const page = pages.find(p => p.id === id);
             if (!page) return;
-            
+
             currentEditId = id;
             document.getElementById('pageName').value = page.name;
             document.getElementById('pageUrl').value = page.url;
@@ -176,12 +198,12 @@
             const url = document.getElementById('pageUrl').value.trim();
             const selector = document.getElementById('pageSelector').value.trim();
             const enabled = document.getElementById('pageEnabled').checked;
-            
+
             if (!name || !url) {
                 alert('請填寫頁面名稱和網址');
                 return;
             }
-            
+
             const pageData = {
                 id: currentEditId || `page_${Date.now()}`,
                 name,
@@ -189,20 +211,20 @@
                 mode: 'change',
                 enabled
             };
-            
+
             if (selector) pageData.selector = selector;
-            
+
             if (currentEditId) {
                 pages[pages.findIndex(p => p.id === currentEditId)] = pageData;
             } else {
                 pages.push(pageData);
             }
-            
+
             savePagesToStorage();
             renderPagesList();
             updateJsonOutput();
             resetForm();
-            
+
             const msg = document.getElementById('successMsg');
             msg.style.display = 'block';
             setTimeout(() => msg.style.display = 'none', 3000);
