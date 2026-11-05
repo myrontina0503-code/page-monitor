@@ -29,11 +29,12 @@
       "enabled": true
     },
     {
-      "id": "page_1793865334980",
-      "name": "達人女中",
+      "id": "page_1793866047753",
+      "name": "達人",
       "url": "https://sites.google.com/trgsh.tp.edu.tw/junior",
       "mode": "change",
-      "enabled": true
+      "enabled": true,
+      "selector": "jXK9ad-SmKAyb"
     }
   ]
 }
